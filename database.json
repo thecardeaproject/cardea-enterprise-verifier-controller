@@ -2,7 +2,7 @@
   "defaultEnv":"test",
   "test": {
     "driver": "pg",
-    "host": "lab-db",
+    "host": "db",
     "schema": "public",
     "database": "development",
     "user": "development",
