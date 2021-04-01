@@ -23,7 +23,7 @@ exports.up = function (db) {
 
   return db.insert('roles', ['role_name'], ['admin']).then(
     function (result) {
-      return db.insert('roles', ['role_name'], ['technician'])
+      return db.insert('roles', ['role_name'], ['moderator'])
     },
     function (err) {
       if (err) return console.log(err)

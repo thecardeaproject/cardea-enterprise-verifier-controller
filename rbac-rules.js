@@ -26,7 +26,7 @@ const rules = {
     'users:updatePassword',
     'users:updateRoles',
   ],
-  technician: [
+  moderator: [
     'basicMessages:create',
     'basicMessages:read',
     'contacts:create',
@@ -42,5 +42,7 @@ const rules = {
     'invitations:create',
   ],
 }
+
+
 
 module.exports = rules
