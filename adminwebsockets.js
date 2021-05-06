@@ -13,7 +13,7 @@ wss = new WebSocket.Server({ server: server, path: '/api/ws' })
 console.log('Websockets Setup')
 
 // Send a message to all connected clients
-const sendMessageToAll = context, type, data = {}) => {
+const sendMessageToAll = (context, type, data = {}) => {
   try {
     console.log(`Sending Message to all websocket clients of type: ${type}`)
 
