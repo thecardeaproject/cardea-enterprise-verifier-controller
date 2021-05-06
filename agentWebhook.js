@@ -1,4 +1,4 @@
-const Websockets = require('./websockets.js')
+const Websockets = require('./adminwebsockets.js')
 
 const express = require('express')
 const router = express.Router()

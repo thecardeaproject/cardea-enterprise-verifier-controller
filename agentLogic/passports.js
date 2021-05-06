@@ -1,4 +1,4 @@
-const Websockets = require('../websockets.js')
+const Websockets = require('../adminwebsockets.js')
 
 let Connections = require('../orm/connections.js')
 let Contacts = require('../orm/contacts.js')

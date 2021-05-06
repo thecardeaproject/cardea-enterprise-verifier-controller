@@ -9,7 +9,7 @@ const NodeMailer = require('../nodeMailer')
 const SMTP = require('./settings')
 const Util = require('../util')
 
-const Websockets = require('../websockets.js')
+const Websockets = require('../adminwebsockets.js')
 let Users = require('../orm/users')
 
 // Perform Agent Business Logic

@@ -19,7 +19,7 @@ let server = http.createServer(app)
 module.exports.server = server
 
 // Websockets required to make APIs work and avoid circular dependency
-let Websocket = require('./websockets.js')
+let Websocket = require('./adminwebsockets.js')
 const Users = require('./agentLogic/users')
 
 app.use(bodyParser.urlencoded({extended: false}))

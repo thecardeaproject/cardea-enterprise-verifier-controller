@@ -1,7 +1,7 @@
 const ControllerError = require('../errors.js')
 
 const AdminAPI = require('../adminAPI')
-const Websockets = require('../websockets.js')
+const Websockets = require('../adminwebsockets.js')
 const CredDefs = require('./credDefs.js')
 const Contacts = require('./contacts.js')
 const DIDs = require('./dids.js')

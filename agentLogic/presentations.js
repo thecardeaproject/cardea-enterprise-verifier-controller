@@ -1,7 +1,7 @@
 const ControllerError = require('../errors.js')
 
 const AdminAPI = require('../adminAPI')
-const Websockets = require('../websockets.js')
+const Websockets = require('../adminwebsockets.js')
 
 const requestPresentation = async (connectionID) => {
   console.log(`Requesting Presentation from Connection: ${connectionID}`)

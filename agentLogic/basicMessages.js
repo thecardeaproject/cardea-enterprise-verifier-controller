@@ -1,4 +1,4 @@
-const Websockets = require('../websockets.js')
+const Websockets = require('../adminwebsockets.js')
 
 const Presentations = require('./presentations.js')
 
