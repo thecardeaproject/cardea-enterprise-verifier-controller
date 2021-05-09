@@ -9,7 +9,8 @@ const cookie = require('cookie')
 const cookieParser = require('cookie-parser')
 let userCookieParsed = undefined
 
-wss = new WebSocket.Server({ server: server, path: '/api/ws' })
+wss = new WebSocket.Server({ noServer: true })
+
 console.log('Websockets Setup')
 
 // Send a message to all connected clients
@@ -18,6 +19,10 @@ const sendMessageToAll = (context, type, data = {}) => {
     console.log(`Sending Message to all websocket clients of type: ${type}`)
 
     wss.clients.forEach(function each(client) {
+      if (client.type != 'admin') {
+        return
+      }
+
       if (client.readyState === WebSocket.OPEN) {
         console.log('Sending Message to Client')
         client.send(JSON.stringify({ context, type, data }))
@@ -596,6 +601,7 @@ const messageHandler = async (ws, context, type, data = {}) => {
 
 module.exports = {
   sendMessageToAll,
+  wss,
 }
 
 const Invitations = require('./agentLogic/invitations')
