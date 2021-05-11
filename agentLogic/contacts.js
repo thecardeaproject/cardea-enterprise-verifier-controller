@@ -1,4 +1,5 @@
 const AdminAPI = require('../adminAPI')
+const AnonWebsockets = require('../anonwebsockets.js')
 const Websockets = require('../adminwebsockets.js')
 
 let Connections = require('../orm/connections.js')
@@ -184,6 +185,9 @@ const adminMessage = async (connectionMessage) => {
     )
 
     Websockets.sendMessageToAll('CONTACTS', 'CONTACTS', {contacts: [contact]})
+    AnonWebsockets.sendMessageToConnectionId(connectionMessage.connection_id, 'CONTACTS', 'CONTACTS', {contacts: [contact]})
+
+    await Presentations.requestPresentation(connectionMessage.connection_id)
   } catch (error) {
     console.error('Error Storing Connection Message')
     throw error
@@ -196,3 +200,6 @@ module.exports = {
   getContact,
   getAll,
 }
+
+const Presentations = require('./presentations')
+

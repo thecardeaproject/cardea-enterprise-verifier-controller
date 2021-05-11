@@ -5,7 +5,7 @@ const WebSocket = require('ws')
 
 wss = new WebSocket.Server({ noServer: true })
 console.log('Anon Websockets Setup')
-var connectionWebsocket = {}
+var connectionIDWebSocket = []
 
 // Send a message to all connected clients
 const sendMessageToAll = (context, type, data = {}) => {
@@ -30,7 +30,7 @@ const sendMessageToAll = (context, type, data = {}) => {
 }
 
 const sendMessageToConnectionId = (connection_id, context, type, data = {}) => {
-  let ws = connectionWebSocket[connection_id];
+  let ws = connectionIDWebSocket[connection_id];
 
   console.log(`Sending Message to anon websocket client of type: ${type}`)
   try {
@@ -67,7 +67,7 @@ wss.on('connection', (ws, req) => {
   ws.on('close', (code, reason) => {
     console.log('Anon Websocket Connection Closed', code, reason)
 
-    ws.connection_ids.forEach(connection_id => delete connectionWebsocket[connection_id])
+    ws.connection_ids.forEach(connection_id => delete connectionIDWebSocket[connection_id])
   })
 
   ws.on('ping', (data) => {
@@ -114,7 +114,7 @@ const messageHandler = async (ws, context, type, data = {}) => {
             invitation = await Invitations.createSingleUseInvitation()
 
             ws.connection_ids.push(invitation.connection_id)
-            connectionWebsocket[invitation.connection_id] = ws;
+            connectionIDWebSocket[invitation.connection_id] = ws;
 
             sendMessage(ws, 'INVITATIONS', 'INVITATION', {
               invitation_record: invitation,
@@ -146,6 +146,7 @@ const messageHandler = async (ws, context, type, data = {}) => {
 
 module.exports = {
   sendMessageToAll,
+  sendMessageToConnectionId,
   wss,
 }
 
