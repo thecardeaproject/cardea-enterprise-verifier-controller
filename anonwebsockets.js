@@ -3,16 +3,16 @@ const ControllerError = require('./errors.js')
 const WebSocket = require('ws')
 
 
-wss = new WebSocket.Server({ noServer: true })
+awss = new WebSocket.Server({ noServer: true })
 console.log('Anon Websockets Setup')
-var connectionIDWebSocket = []
+let connectionIDWebSocket = []
 
 // Send a message to all connected clients
 const sendMessageToAll = (context, type, data = {}) => {
   try {
     console.log(`Sending Message to all anon websocket clients of type: ${type}`)
 
-    wss.clients.forEach(function each(client) {
+    awss.clients.forEach(function each(client) {
       if (client.type != 'anon') {
         return
       }
@@ -42,7 +42,7 @@ const sendMessageToConnectionId = (connection_id, context, type, data = {}) => {
 }
 
 // (JamesKEbert) TODO: Add a connection timeout to gracefully exit versus nginx configuration closing abrubtly
-wss.on('connection', (ws, req) => {
+awss.on('connection', (ws, req) => {
   console.log('New Anon Websocket Connection')
   ws.connection_ids = []
 
@@ -147,7 +147,7 @@ const messageHandler = async (ws, context, type, data = {}) => {
 module.exports = {
   sendMessageToAll,
   sendMessageToConnectionId,
-  wss,
+  awss,
 }
 
 const Invitations = require('./agentLogic/invitations')

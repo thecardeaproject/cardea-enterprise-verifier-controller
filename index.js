@@ -33,9 +33,9 @@ server.on('upgrade', function upgrade(request, socket, head) {
       adminWebsocket.wss.emit('connection', ws, request);
     });
   } else if (pathname === '/api/anon/ws') {
-    anonWebSocket.wss.handleUpgrade(request, socket, head, function done(ws) {
+    anonWebSocket.awss.handleUpgrade(request, socket, head, function done(ws) {
       ws.type = 'anon'
-      anonWebSocket.wss.emit('connection', ws, request);
+      anonWebSocket.awss.emit('connection', ws, request);
     });
   } else {
     socket.destroy();
