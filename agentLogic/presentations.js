@@ -19,8 +19,6 @@ const requestPresentation = async (connectionID) => {
 
 const adminMessage = async (message) => {
   console.log('Received Presentations Message', message)
-  console.log("ASDF")
-  console.log(message.presentation)
 
   if (message.state === 'verified') {
     console.log('Employee has been verified')
