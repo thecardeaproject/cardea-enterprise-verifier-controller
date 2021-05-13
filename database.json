@@ -2,7 +2,7 @@
   "defaultEnv":"test",
   "test": {
     "driver": "pg",
-    "host": "db",
+    "host": "verifier-db",
     "schema": "public",
     "database": "development",
     "user": "development",
