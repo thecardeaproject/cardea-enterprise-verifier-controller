@@ -4,8 +4,8 @@
     "driver": "pg",
     "host": "verifier-db",
     "schema": "public",
-    "database": "development",
-    "user": "development",
-    "password": "development"
+    "database": "verifier",
+    "user": "verifier",
+    "password": "verifier"
   }
 }
