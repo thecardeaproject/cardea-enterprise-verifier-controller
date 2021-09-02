@@ -70,7 +70,7 @@ _TODO_
 
 ## Quickstart
 
-### Separate Module Quickstart (non-containerized) 
+### Separate Module Quickstart (non-containerized)
 Upon installation, run
 ```
 npm run dev

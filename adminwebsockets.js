@@ -9,7 +9,7 @@ const cookie = require('cookie')
 const cookieParser = require('cookie-parser')
 let userCookieParsed = undefined
 
-wss = new WebSocket.Server({ noServer: true })
+wss = new WebSocket.Server({noServer: true})
 
 console.log('Websockets Setup')
 
@@ -25,7 +25,7 @@ const sendMessageToAll = (context, type, data = {}) => {
 
       if (client.readyState === WebSocket.OPEN) {
         console.log('Sending Message to Client')
-        client.send(JSON.stringify({ context, type, data }))
+        client.send(JSON.stringify({context, type, data}))
       } else {
         console.log('Client Not Ready')
       }
@@ -45,7 +45,7 @@ wss.on('connection', (ws, req) => {
     const cookies = cookie.parse(req.headers.cookie)
     const userCookie = cookieParser.signedCookie(cookies['user'])
     userCookieParsed = JSON.parse(userCookie.substring(2))
-  } catch (error) { }
+  } catch (error) {}
 
   ws.on('message', (message) => {
     try {
@@ -79,7 +79,7 @@ wss.on('connection', (ws, req) => {
 const sendMessage = (ws, context, type, data = {}) => {
   console.log(`Sending Message to websocket client of type: ${type}`)
   try {
-    ws.send(JSON.stringify({ context, type, data }))
+    ws.send(JSON.stringify({context, type, data}))
   } catch (error) {
     console.error(error)
     throw error
@@ -91,7 +91,7 @@ const sendErrorMessage = (ws, errorCode, errorReason) => {
   try {
     console.log('Sending Error Message')
 
-    sendMessage(ws, 'ERROR', 'SERVER_ERROR', { errorCode, errorReason })
+    sendMessage(ws, 'ERROR', 'SERVER_ERROR', {errorCode, errorReason})
   } catch (error) {
     console.error('Error Sending Error Message to Client')
     console.error(error)
@@ -118,17 +118,17 @@ const messageHandler = async (ws, context, type, data = {}) => {
 
           case 'GET':
             const user = await Users.getUser(data.user_id)
-            sendMessage(ws, 'USERS', 'USERS', { users: [user] })
+            sendMessage(ws, 'USERS', 'USERS', {users: [user]})
             break
 
           case 'GET_USER_BY_TOKEN':
             const userByToken = await Users.getUserByToken(data)
-            sendMessage(ws, 'USERS', 'USER', { user: [userByToken] })
+            sendMessage(ws, 'USERS', 'USER', {user: [userByToken]})
             break
 
           case 'GET_USER_BY_EMAIL':
             const userByEmail = await Users.getUserByEmail(data)
-            sendMessage(ws, 'USERS', 'USER', { user: [userByEmail] })
+            sendMessage(ws, 'USERS', 'USER', {user: [userByEmail]})
             break
 
           case 'CREATE':
@@ -238,7 +238,8 @@ const messageHandler = async (ws, context, type, data = {}) => {
               }
             } else {
               sendMessage(ws, 'USERS', 'USER_ERROR', {
-                error: 'ERROR: You are not authorized to re-send confirmation email.',
+                error:
+                  'ERROR: You are not authorized to re-send confirmation email.',
               })
             }
             break
@@ -265,7 +266,7 @@ const messageHandler = async (ws, context, type, data = {}) => {
 
           case 'GET':
             const role = await Roles.getRole(data.role_id)
-            sendMessage(ws, 'ROLES', 'ROLES', { roles: [role] })
+            sendMessage(ws, 'ROLES', 'ROLES', {roles: [role]})
             break
 
           default:
@@ -322,7 +323,7 @@ const messageHandler = async (ws, context, type, data = {}) => {
               data.contact_id,
               data.additional_tables,
             )
-            sendMessage(ws, 'CONTACTS', 'CONTACTS', { contacts: [contact] })
+            sendMessage(ws, 'CONTACTS', 'CONTACTS', {contacts: [contact]})
             break
 
           default:
