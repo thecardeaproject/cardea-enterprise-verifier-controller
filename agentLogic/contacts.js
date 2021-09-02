@@ -185,7 +185,12 @@ const adminMessage = async (connectionMessage) => {
     )
 
     Websockets.sendMessageToAll('CONTACTS', 'CONTACTS', {contacts: [contact]})
-    AnonWebsockets.sendMessageToConnectionId(connectionMessage.connection_id, 'CONTACTS', 'CONTACTS', {contacts: [contact]})
+    AnonWebsockets.sendMessageToConnectionId(
+      connectionMessage.connection_id,
+      'CONTACTS',
+      'CONTACTS',
+      {contacts: [contact]},
+    )
 
     await Presentations.requestPresentation(connectionMessage.connection_id)
   } catch (error) {
@@ -202,4 +207,3 @@ module.exports = {
 }
 
 const Presentations = require('./presentations')
-
