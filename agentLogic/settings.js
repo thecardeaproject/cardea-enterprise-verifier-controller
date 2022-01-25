@@ -113,6 +113,12 @@ const setManifest = async (short_name, name, theme_color, bg_color) => {
   }
 }
 
+const getSchemas = async () => {
+  return {
+    SCHEMA_TRUSTED_TRAVELER: process.env.SCHEMA_TRUSTED_TRAVELER,
+  }
+}
+
 module.exports = {
   getTheme,
   setTheme,
@@ -121,4 +127,5 @@ module.exports = {
   getOrganization,
   setOrganization,
   setManifest,
+  getSchemas,
 }
