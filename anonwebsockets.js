@@ -2,7 +2,7 @@ const server = require('./index.js').server
 const ControllerError = require('./errors.js')
 const WebSocket = require('ws')
 
-awss = new WebSocket.Server({noServer: true})
+awss = new WebSocket.Server({ noServer: true })
 console.log('Anon Websockets Setup')
 let connectionIDWebSocket = []
 
@@ -19,7 +19,7 @@ const sendMessageToAll = (context, type, data = {}) => {
       }
       if (client.readyState === WebSocket.OPEN) {
         console.log('Sending Message to Client')
-        client.send(JSON.stringify({context, type, data}))
+        client.send(JSON.stringify({ context, type, data }))
       } else {
         console.log('Client Not Ready')
       }
@@ -35,7 +35,7 @@ const sendMessageToConnectionId = (connection_id, context, type, data = {}) => {
 
   console.log(`Sending Message to anon websocket client of type: ${type}`)
   try {
-    ws.send(JSON.stringify({context, type, data}))
+    ws.send(JSON.stringify({ context, type, data }))
   } catch (error) {
     console.error(error)
     throw error
@@ -85,7 +85,7 @@ awss.on('connection', (ws, req) => {
 const sendMessage = (ws, context, type, data = {}) => {
   console.log(`Sending Message to anon websocket client of type: ${type}`)
   try {
-    ws.send(JSON.stringify({context, type, data}))
+    ws.send(JSON.stringify({ context, type, data }))
   } catch (error) {
     console.error(error)
     throw error
@@ -97,7 +97,7 @@ const sendErrorMessage = (ws, errorCode, errorReason) => {
   try {
     console.log('Sending Error Message')
 
-    sendMessage(ws, 'ERROR', 'SERVER_ERROR', {errorCode, errorReason})
+    sendMessage(ws, 'ERROR', 'SERVER_ERROR', { errorCode, errorReason })
   } catch (error) {
     console.error('Error Sending Error Message to Client')
     console.error(error)
@@ -130,6 +130,91 @@ const messageHandler = async (ws, context, type, data = {}) => {
         }
         break
 
+      case 'PRESENTATIONS':
+        switch (type) {
+          case 'REQUEST':
+            if (ws.connection_ids.indexOf(data.connection_id) != -1) {
+              await Presentations.requestPresentation(
+                data.connection_id,
+                data.schema_id,
+                data.attributes,
+              )
+            }
+        }
+        break
+
+      case 'SETTINGS':
+        switch (type) {
+          case 'GET_ORGANIZATION':
+            console.log('GET_ORGANIZATION')
+            const currentOrganization = await Settings.getOrganization()
+            if (currentOrganization)
+              sendMessage(
+                ws,
+                'SETTINGS',
+                'SETTINGS_ORGANIZATION',
+                currentOrganization.value,
+              )
+            else
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error: "ERROR: organization name couldn't be fetched.",
+              })
+            break
+
+          case 'GET_SCHEMAS':
+            console.log('GET_SCHEMAS')
+            const currentSchemas = await Settings.getSchemas()
+            if (currentSchemas)
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_SCHEMAS', currentSchemas)
+            else
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error: "ERROR: Credential schemas couldn't be fetched.",
+              })
+            break
+        }
+        break
+
+      case 'IMAGES':
+        switch (type) {
+          case 'SET_LOGO':
+            if (check(rules, userCookieParsed, 'settings:update')) {
+              console.log('SET_LOGO')
+              console.log(data)
+              const newImage = await Images.setImage(
+                data.name,
+                data.type,
+                data.image,
+              )
+              if (newImage.error) {
+                sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', newImage)
+              } else {
+                sendMessage(ws, 'SETTINGS', 'LOGO', newImage[0])
+                sendMessage(
+                  ws,
+                  'SETTINGS',
+                  'SETTINGS_SUCCESS',
+                  'Logo was successfully updated!',
+                )
+              }
+            } else {
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error: 'ERROR: You are not authorized to update the logo.',
+              })
+            }
+            break
+
+          default:
+            console.log('GET_IMAGES')
+            const images = await Images.getAll()
+            if (images) sendMessage(ws, 'SETTINGS', 'LOGO', images[0])
+            else
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error: "ERROR: images couldn't be fetched.",
+              })
+            break
+        }
+        break
+
       default:
         console.error(`Unrecognized Message Context: ${context}`)
         sendErrorMessage(ws, 1, 'Unrecognized Message Context')
@@ -152,4 +237,7 @@ module.exports = {
   awss,
 }
 
+const Images = require('./agentLogic/images')
 const Invitations = require('./agentLogic/invitations')
+const Presentations = require('./agentLogic/presentations')
+const Settings = require('./agentLogic/settings')
