@@ -2,10 +2,10 @@
   "defaultEnv":"test",
   "test": {
     "driver": "pg",
-    "host": "verifier-db",
+    "host": {"ENV": "DB_HOST"},
     "schema": "public",
-    "database": "verifier",
-    "user": "verifier",
-    "password": "verifier"
+    "database": {"ENV": "DB"},
+    "user": {"ENV": "DB_USERNAME"},
+    "password": {"ENV": "DB_PASSWORD"}
   }
 }
