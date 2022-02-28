@@ -10,6 +10,7 @@ See also: https://mit-license.org/
 
 * [Axios](https://github.com/axios/axios)
 * [body-parser](https://github.com/expressjs/body-parser)
+* [connect-session-sequelize](https://github.com/mweibel/connect-session-sequelize)
 * [db-migrate](https://github.com/db-migrate/node-db-migrate)
 * [luxon](https://github.com/moment/luxon)
 * [db-migrate-pg](https://github.com/db-migrate/pg)
