@@ -69,7 +69,7 @@ exports.readSMTP = async function () {
     console.log('All smtp settings:', JSON.stringify(smtp, null, 2))
     return smtp[0]
   } catch (error) {
-    console.error('Could not find organization name in the database: ', error)
+    console.error('Could not find smtp settings in the database: ', error)
   }
 }
 
