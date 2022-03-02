@@ -31,6 +31,29 @@ const createInvitation = async (
   }
 }
 
+const acceptInvitation = async (invitation) => {
+  try {
+    console.log('Accepting Invitation')
+
+    let parsedInvitation = JSON.parse(invitation)
+
+    const invitationMessage = await sendAdminMessage(
+      'post',
+      `/connections/receive-invitation`,
+      {
+        alias: parsedInvitation.label,
+        auto_accept: true,
+      },
+      parsedInvitation,
+    )
+
+    return invitationMessage
+  } catch (error) {
+    console.error('Invitation Acceptance Error')
+    throw error
+  }
+}
+
 // Fetch a Connection request message to be sent to the Cloud Agent Adminstration API
 const fetchConnection = async (connectionID) => {
   try {
@@ -108,6 +131,7 @@ const queryConnections = async (
 
 module.exports = {
   createInvitation,
+  acceptInvitation,
   fetchConnection,
   queryConnections,
 }

@@ -185,6 +185,15 @@ const adminMessage = async (connectionMessage) => {
     )
 
     Websockets.sendMessageToAll('CONTACTS', 'CONTACTS', {contacts: [contact]})
+
+    if (
+      AnonWebsockets.connectionIDWebSocket[connectionMessage.connection_id] ===
+      undefined
+    ) {
+      console.log('No Anon Websocket connection is available!')
+      return
+    }
+
     AnonWebsockets.sendMessageToConnectionId(
       connectionMessage.connection_id,
       'CONTACTS',
