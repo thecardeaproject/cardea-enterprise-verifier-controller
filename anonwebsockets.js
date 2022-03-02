@@ -150,6 +150,7 @@ module.exports = {
   sendMessageToAll,
   sendMessageToConnectionId,
   awss,
+  connectionIDWebSocket,
 }
 
 const Invitations = require('./agentLogic/invitations')
