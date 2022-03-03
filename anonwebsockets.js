@@ -232,6 +232,7 @@ module.exports = {
   sendMessageToAll,
   sendMessageToConnectionId,
   awss,
+  connectionIDWebSocket,
 }
 
 const Images = require('./agentLogic/images')
