@@ -851,6 +851,51 @@ const messageHandler = async (ws, context, type, data = {}) => {
         }
         break
 
+      case 'GOVERNANCE':
+        switch (type) {
+          case 'GET_PRIVILEGES':
+            console.log('GET_PRIVILEGES')
+            if (check(rules, userRoles, 'invitations:create')) {
+              const privileges = await Governance.getPrivilegesByRoles()
+              if (privileges.error === 'noDID') {
+                console.log('No public did anchored')
+                sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_ERROR', {
+                  error: 'ERROR: You need to anchor your DID',
+                })
+              } else if (privileges.error === 'noPermissions') {
+                console.log('No permissions set')
+                sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_ERROR', {
+                  error: 'ERROR: Governance permissions are not set',
+                })
+              } else if (privileges.error === 'noPrivileges') {
+                console.log('No privileges set')
+                sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_ERROR', {
+                  error: 'ERROR: Governance privileges are not set',
+                })
+              } else if (!privileges) {
+                console.log('ERROR: privileges undefined error')
+                sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_ERROR', {
+                  error: 'ERROR: privileges undefined error',
+                })
+              } else {
+                sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_SUCCESS', {
+                  privileges,
+                })
+              }
+            } else {
+              sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_ERROR', {
+                error: 'ERROR: You are not authorized to create invitations.',
+              })
+            }
+            break
+
+          default:
+            console.error(`Unrecognized Message Type: ${type}`)
+            sendErrorMessage(ws, 1, 'Unrecognized Message Type')
+            break
+        }
+        break
+
       default:
         console.error(`Unrecognized Message Context: ${context}`)
         sendErrorMessage(ws, 1, 'Unrecognized Message Context')
@@ -872,14 +917,15 @@ module.exports = {
   wss,
 }
 
-const Invitations = require('./agentLogic/invitations')
-const Demographics = require('./agentLogic/demographics')
-const Passports = require('./agentLogic/passports')
-const Presentations = require('./agentLogic/presentations')
 const Contacts = require('./agentLogic/contacts')
 const Credentials = require('./agentLogic/credentials')
+const Demographics = require('./agentLogic/demographics')
+const Governance = require('./agentLogic/governance')
 const Images = require('./agentLogic/images')
+const Invitations = require('./agentLogic/invitations')
+const Passports = require('./agentLogic/passports')
+const Presentations = require('./agentLogic/presentations')
+const Roles = require('./agentLogic/roles')
 const Sessions = require('./agentLogic/sessions')
 const Settings = require('./agentLogic/settings')
 const Users = require('./agentLogic/users')
-const Roles = require('./agentLogic/roles')
