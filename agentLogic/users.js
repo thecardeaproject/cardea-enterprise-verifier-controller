@@ -152,7 +152,7 @@ const createUser = async function (email, roles) {
 
     // Send new account email
     await NodeMailer.sendMail({
-      from: currentSMTP.dataValues.value.auth.user,
+      from: currentSMTP.dataValues.value.auth.email,
       to: user.email,
       subject: 'Aries enterprise app account registration',
       html: `<p>Hello dear user,<br> we have created an account for you.<br><br> Please follow this <a href="${link}">link</a> to finish registration. Your link will expire in 24 hours.<br><br> Best wishes,<br> Aries Enterprise SPA</p>`,
@@ -269,7 +269,7 @@ const updateUser = async function (
 
         // Send password reset email
         await NodeMailer.sendMail({
-          from: currentSMTP.dataValues.value.auth.user,
+          from: currentSMTP.dataValues.value.auth.email,
           to: email,
           subject: 'Aries password reset request',
           html: `<p>Hello dear user,<br> You have requested the password change for your account. Please, follow this <a href="${link}">link</a> to reset your password. Your link will expire in 10 minutes.<br><br> Best wishes,<br> Aries Enterprise SPA</p>`,
@@ -384,7 +384,7 @@ const resendAccountConfirmation = async function (email) {
 
     // Send new account email
     await NodeMailer.sendMail({
-      from: currentSMTP.dataValues.value.auth.user,
+      from: currentSMTP.dataValues.value.auth.email,
       to: user.email,
       subject: 'Aries enterprise app account registration',
       html: `<p>Hello dear user,<br> we have created an account for you.<br><br> Please follow this <a href="${link}">link</a> to finish registration. Your link will expire in 24 hours.<br><br> Best wishes,<br> Aries Enterprise SPA</p>`,

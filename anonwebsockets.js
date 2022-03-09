@@ -130,6 +130,88 @@ const messageHandler = async (ws, context, type, data = {}) => {
         }
         break
 
+      case 'SETTINGS':
+        switch (type) {
+          case 'GET_ORGANIZATION':
+            console.log('GET_ORGANIZATION')
+            const currentOrganization = await Settings.getOrganization()
+            if (currentOrganization)
+              sendMessage(
+                ws,
+                'SETTINGS',
+                'SETTINGS_ORGANIZATION',
+                currentOrganization.value,
+              )
+            else
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error: "ERROR: organization name couldn't be fetched.",
+              })
+            break
+
+          case 'GET_THEME':
+            const currentTheme = await Settings.getTheme()
+            if (currentTheme)
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_THEME', currentTheme)
+            else
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error: "ERROR: UI theme couldn't be fetched.",
+              })
+            break
+
+          case 'GET_SCHEMAS':
+            console.log('GET_SCHEMAS')
+            const currentSchemas = await Settings.getSchemas()
+            if (currentSchemas)
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_SCHEMAS', currentSchemas)
+            else
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error: "ERROR: Credential schemas couldn't be fetched.",
+              })
+            break
+        }
+        break
+
+      case 'IMAGES':
+        switch (type) {
+          case 'SET_LOGO':
+            if (check(rules, userCookieParsed, 'settings:update')) {
+              console.log('SET_LOGO')
+              console.log(data)
+              const newImage = await Images.setImage(
+                data.name,
+                data.type,
+                data.image,
+              )
+              if (newImage.error) {
+                sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', newImage)
+              } else {
+                sendMessage(ws, 'SETTINGS', 'LOGO', newImage[0])
+                sendMessage(
+                  ws,
+                  'SETTINGS',
+                  'SETTINGS_SUCCESS',
+                  'Logo was successfully updated!',
+                )
+              }
+            } else {
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error: 'ERROR: You are not authorized to update the logo.',
+              })
+            }
+            break
+
+          default:
+            console.log('GET_IMAGES')
+            const images = await Images.getAll()
+            if (images) sendMessage(ws, 'SETTINGS', 'LOGO', images[0])
+            else
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error: "ERROR: images couldn't be fetched.",
+              })
+            break
+        }
+        break
+
       default:
         console.error(`Unrecognized Message Context: ${context}`)
         sendErrorMessage(ws, 1, 'Unrecognized Message Context')
@@ -150,6 +232,9 @@ module.exports = {
   sendMessageToAll,
   sendMessageToConnectionId,
   awss,
+  connectionIDWebSocket,
 }
 
+const Images = require('./agentLogic/images')
 const Invitations = require('./agentLogic/invitations')
+const Settings = require('./agentLogic/settings')
