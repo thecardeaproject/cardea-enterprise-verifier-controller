@@ -263,6 +263,7 @@ app.post('/api/user/password/update', async (req, res) => {
 app.post('/api/user/update', async (req, res) => {
   let userByEmail = undefined
   let user = undefined
+
   if (req.body.flag && req.body.flag === 'set-up user') {
     // Updating the user during the user setup process
 
@@ -270,66 +271,77 @@ app.post('/api/user/update', async (req, res) => {
     try {
       const verify = jwt.verify(req.body.token, process.env.JWT_SECRET)
     } catch (error) {
-      res.json({error: 'The link has expired.'})
+      res.json({ error: 'The link has expired.' })
       throw error
     }
 
     // Empty/data checks
-    if (!req.body.email || !req.body.username || !req.body.password)
-      res.json({error: 'All fields must be filled out.'})
-
-    if (!Util.validateEmail(req.body.email))
-      res.json({error: 'Must be a valid email.'})
-
-    if (!Util.validateAlphaNumeric(req.body.username))
+    if (!req.body.email || !req.body.username || !req.body.password) {
+      res.json({ error: 'All fields must be filled out.' })
+    } else if (!Util.validateEmail(req.body.email)) {
+      res.json({ error: 'Must be a valid email.' })
+    } else if (!Util.validateAlphaNumeric(req.body.username)) {
       res.json({
-        error: 'Username or password is wrong',
+        error: 'Username must be least 3 characters long',
       })
-
-    if (!Util.validatePassword(req.body.password))
+    } else if (!Util.validatePassword(req.body.password)) {
       res.json({
         error: 'Password must be at least 15 characters.',
       })
+    } else {
+      userByEmail = await Users.getUserByEmail(req.body.email)
+      if (!userByEmail) {
+        res.json({ error: 'The user was not found.' })
+      } else {
+        user = await Users.updateUser(
+          userByEmail.user_id,
+          req.body.username,
+          req.body.email,
+          req.body.password,
+          req.body.token,
+          null,
+          req.body.flag,
+        )
 
-    userByEmail = await Users.getUserByEmail(req.body.email)
-    if (!userByEmail) res.json({error: 'The user was not found.'})
-
-    user = await Users.updateUser(
-      userByEmail.user_id,
-      req.body.username,
-      req.body.email,
-      req.body.password,
-      req.body.token,
-      null,
-      req.body.flag,
-    )
+        if (!user) {
+          res.json({ error: "The user couldn't be updated." })
+        } else if (user.error) {
+          res.send(user.error)
+        } else {
+          res.status(200).json({ status: 'User updated.' })
+        }
+      }
+    }
   } else {
-    // Updating the token for the user (from password forgot screen)
+    // updating the token for the user (from password forgot screen)
 
     // Empty/data checks
-    if (!req.body.email) res.json({error: 'All fields must be filled out.'})
+    if (!req.body.email) {
+      res.json({ error: 'All fields must be filled out.' })
+    } else if (!Util.validateEmail(req.body.email)) {
+      res.json({ error: 'Must be a valid email.' })
+    } else {
+      userByEmail = await Users.getUserByEmail(req.body.email)
+      if (!userByEmail) res.json({ error: 'The user was not found.' })
+      user = await Users.updateUser(
+        userByEmail.user_id,
+        userByEmail.username,
+        userByEmail.email,
+        userByEmail.password,
+        null,
+        null,
+        req.body.flag,
+      )
 
-    if (!Util.validateEmail(req.body.email))
-      res.json({error: 'Must be a valid email.'})
-
-    userByEmail = await Users.getUserByEmail(req.body.email)
-    if (!userByEmail) res.json({error: 'The user was not found.'})
-    user = await Users.updateUser(
-      userByEmail.user_id,
-      userByEmail.username,
-      userByEmail.email,
-      userByEmail.password,
-      null,
-      null,
-      req.body.flag,
-    )
+      if (user.error) {
+        res.send(user.error)
+      } else if (!user) {
+        res.json({ error: "The user couldn't be updated." })
+      } else {
+        res.status(200).json({ status: 'User updated.' })
+      }
+    }
   }
-
-  // If SMTP is not set up or broken
-  if (user.error) res.send(user.error)
-
-  if (!user) res.json({error: "The user couldn't be updated."})
-  else res.status(200).json({status: 'User updated.'})
 })
 
 // Logo retrieval
