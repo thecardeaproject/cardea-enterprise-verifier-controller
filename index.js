@@ -271,15 +271,15 @@ app.post('/api/user/update', async (req, res) => {
     try {
       const verify = jwt.verify(req.body.token, process.env.JWT_SECRET)
     } catch (error) {
-      res.json({ error: 'The link has expired.' })
+      res.json({error: 'The link has expired.'})
       throw error
     }
 
     // Empty/data checks
     if (!req.body.email || !req.body.username || !req.body.password) {
-      res.json({ error: 'All fields must be filled out.' })
+      res.json({error: 'All fields must be filled out.'})
     } else if (!Util.validateEmail(req.body.email)) {
-      res.json({ error: 'Must be a valid email.' })
+      res.json({error: 'Must be a valid email.'})
     } else if (!Util.validateAlphaNumeric(req.body.username)) {
       res.json({
         error: 'Username must be least 3 characters long',
@@ -291,7 +291,7 @@ app.post('/api/user/update', async (req, res) => {
     } else {
       userByEmail = await Users.getUserByEmail(req.body.email)
       if (!userByEmail) {
-        res.json({ error: 'The user was not found.' })
+        res.json({error: 'The user was not found.'})
       } else {
         user = await Users.updateUser(
           userByEmail.user_id,
@@ -304,11 +304,11 @@ app.post('/api/user/update', async (req, res) => {
         )
 
         if (!user) {
-          res.json({ error: "The user couldn't be updated." })
+          res.json({error: "The user couldn't be updated."})
         } else if (user.error) {
           res.send(user.error)
         } else {
-          res.status(200).json({ status: 'User updated.' })
+          res.status(200).json({status: 'User updated.'})
         }
       }
     }
@@ -317,12 +317,12 @@ app.post('/api/user/update', async (req, res) => {
 
     // Empty/data checks
     if (!req.body.email) {
-      res.json({ error: 'All fields must be filled out.' })
+      res.json({error: 'All fields must be filled out.'})
     } else if (!Util.validateEmail(req.body.email)) {
-      res.json({ error: 'Must be a valid email.' })
+      res.json({error: 'Must be a valid email.'})
     } else {
       userByEmail = await Users.getUserByEmail(req.body.email)
-      if (!userByEmail) res.json({ error: 'The user was not found.' })
+      if (!userByEmail) res.json({error: 'The user was not found.'})
       user = await Users.updateUser(
         userByEmail.user_id,
         userByEmail.username,
@@ -336,9 +336,9 @@ app.post('/api/user/update', async (req, res) => {
       if (user.error) {
         res.send(user.error)
       } else if (!user) {
-        res.json({ error: "The user couldn't be updated." })
+        res.json({error: "The user couldn't be updated."})
       } else {
-        res.status(200).json({ status: 'User updated.' })
+        res.status(200).json({status: 'User updated.'})
       }
     }
   }
