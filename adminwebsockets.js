@@ -149,7 +149,7 @@ wss.on('connection', async (ws, req) => {
     console.log('Pong')
   })
 
-  sendMessage(ws, 'SERVER', 'WEBSOCKET_READY')
+  sendMessage(ws, 'SERVER', 'ADMIN_WEBSOCKET_READY')
 })
 
 // Send an outbound message to a websocket client
