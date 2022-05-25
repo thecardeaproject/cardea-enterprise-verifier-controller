@@ -79,6 +79,8 @@ awss.on('connection', (ws, req) => {
   ws.on('pong', (data) => {
     console.log('Pong')
   })
+
+  sendMessage(ws, 'SERVER', 'ANON_WEBSOCKET_READY')
 })
 
 // Send an outbound message to a websocket client
