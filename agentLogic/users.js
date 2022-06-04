@@ -113,16 +113,16 @@ const createUser = async function (email, roles) {
 
   // Empty/data checks
   if (!email || !Array.isArray(roles) || !roles.length)
-    return {error: 'USER ERROR: All fields must be filled out.'}
+    return { error: 'USER ERROR: All fields must be filled out.' }
 
   if (!Util.validateEmail(email))
-    return {error: 'USER ERROR: Must be a valid email.'}
+    return { error: 'USER ERROR: Must be a valid email.' }
 
   try {
     // Checking for duplicate email
     const duplicateUser = await Users.readUserByEmail(email)
     if (duplicateUser)
-      return {error: 'USER ERROR: the user with this email already exist.'}
+      return { error: 'USER ERROR: the user with this email already exist.' }
 
     const user = await Users.createUser(email)
 
@@ -130,7 +130,7 @@ const createUser = async function (email, roles) {
       await Users.linkRoleAndUser(roles[i], user.user_id)
     }
 
-    const token = jwt.sign({id: user.user_id}, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, {
       expiresIn: '24h',
     })
     const link = process.env.WEB_ROOT + `/account-setup/#${token}`
@@ -159,13 +159,17 @@ const createUser = async function (email, roles) {
     })
 
     // Broadcast the message to all connections
-    Websockets.sendMessageToAll('USERS', 'USER_CREATED', {user: [newUser]})
+    Websockets.sendMessageToAll('USERS', 'USER_CREATED', { user: [newUser] })
 
     // Return true to trigger the success message
     return true
   } catch (error) {
     console.error('Error Fetching User')
-    throw error
+    // throw error
+    return {
+      error:
+        'Was not able to send a confirmation email. Please, make sure that you set user email in the SMTP configurations properly.',
+    }
   }
 }
 
@@ -182,19 +186,19 @@ const updateUser = async function (
     // Checks for updating the user by admin
     if (!email) {
       console.log('ERROR: email is empty.')
-      return {error: 'USER ERROR: All fields must be filled out.'}
+      return { error: 'USER ERROR: All fields must be filled out.' }
     }
 
     if (roles) {
       if (!Array.isArray(roles) || !roles.length) {
         console.log('ERROR: All fields must be filled out.')
-        return {error: 'USER ERROR: Roles are empty.'}
+        return { error: 'USER ERROR: Roles are empty.' }
       }
     }
 
     if (!Util.validateEmail(email)) {
       console.log('ERROR: Must be a valid email.')
-      return {error: 'USER ERROR: Must be a valid email.'}
+      return { error: 'USER ERROR: Must be a valid email.' }
     }
 
     if (username)
@@ -211,7 +215,7 @@ const updateUser = async function (
     // Checking for duplicate email
     const duplicateEmail = await Users.readUserByEmail(email)
     if (duplicateEmail && duplicateEmail.user_id !== userID) {
-      return {error: 'USER ERROR: the user with this email already exist.'}
+      return { error: 'USER ERROR: the user with this email already exist.' }
     }
 
     // Checking for duplicate username
@@ -221,7 +225,7 @@ const updateUser = async function (
       username !== '' &&
       duplicateUsername.user_id !== userID
     ) {
-      return {error: 'USER ERROR: the user with this username already exist.'}
+      return { error: 'USER ERROR: the user with this username already exist.' }
     }
 
     const userToUpdate = await Users.readUser(userID)
@@ -257,23 +261,32 @@ const updateUser = async function (
           }
         }
 
-        const newToken = jwt.sign({id: userID}, process.env.JWT_SECRET, {
-          expiresIn: '10m',
-        })
-        const link = process.env.WEB_ROOT + `/password-reset/#${newToken}`
+        try {
+          const newToken = jwt.sign({ id: userID }, process.env.JWT_SECRET, {
+            expiresIn: '10m',
+          })
+          const link = process.env.WEB_ROOT + `/password-reset/#${newToken}`
 
-        await Users.updateUserInfo(userID, username, email, password, newToken)
+          await Users.updateUserInfo(userID, username, email, password, newToken)
 
-        // Get email from SMTP config
-        const currentSMTP = await SMTP.getSMTP()
+          // Get email from SMTP config
+          const currentSMTP = await SMTP.getSMTP()
 
-        // Send password reset email
-        await NodeMailer.sendMail({
-          from: currentSMTP.dataValues.value.auth.email,
-          to: email,
-          subject: 'Aries password reset request',
-          html: `<p>Hello dear user,<br> You have requested the password change for your account. Please, follow this <a href="${link}">link</a> to reset your password. Your link will expire in 10 minutes.<br><br> Best wishes,<br> Aries Enterprise SPA</p>`,
-        })
+          // Send password reset email
+          await NodeMailer.sendMail({
+            from: currentSMTP.dataValues.value.auth.email,
+            to: email,
+            subject: 'Aries password reset request',
+            html: `<p>Hello dear user,<br> You have requested the password change for your account. Please, follow this <a href="${link}">link</a> to reset your password. Your link will expire in 10 minutes.<br><br> Best wishes,<br> Aries Enterprise SPA</p>`,
+          })
+        } catch (error) {
+          console.error('Error Reseting Password')
+          // throw error
+          return {
+            error:
+              'Was not able to send a confirmation email. Please, make sure that you set user email in the SMTP configurations properly.',
+          }
+        }
       } else {
         // User update by admin
         await Users.updateUserInfo(userID, username, email, password, token)
@@ -293,7 +306,7 @@ const updateUser = async function (
     const updatedUser = await Users.readUser(userID)
 
     // Broadcast the message to all connections
-    Websockets.sendMessageToAll('USERS', 'USER_UPDATED', {updatedUser})
+    Websockets.sendMessageToAll('USERS', 'USER_UPDATED', { updatedUser })
 
     console.log('Updated user:', updatedUser)
 
@@ -356,7 +369,7 @@ const resendAccountConfirmation = async function (email) {
   try {
     const user = await Users.readUserByEmail(email)
 
-    const token = jwt.sign({id: user.user_id}, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, {
       expiresIn: '24h',
     })
     const link = process.env.WEB_ROOT + `/account-setup/#${token}`
@@ -394,7 +407,11 @@ const resendAccountConfirmation = async function (email) {
     return true
   } catch (error) {
     console.error('Error Fetching User')
-    throw error
+    // throw error
+    return {
+      error:
+        'Was not able to send a confirmation email. Please, make sure that you set user email in the SMTP configurations properly.',
+    }
   }
 }
 
