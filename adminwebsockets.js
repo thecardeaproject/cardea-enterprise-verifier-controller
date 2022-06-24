@@ -7,6 +7,7 @@ const check = require('./canUser')
 const rules = require('./rbac-rules')
 const cookie = require('cookie')
 const cookieParser = require('cookie-parser')
+
 let userRoles = []
 
 wss = new WebSocket.Server({ noServer: true })
@@ -41,7 +42,6 @@ wss.on('connection', async (ws, req) => {
   console.log('New Websocket Connection')
 
   const cookies = cookie.parse(req.headers.cookie)
-
   // Getting the user data from the cookie
   try {
     //console.log("Getting session cookie from headers")
@@ -51,7 +51,6 @@ wss.on('connection', async (ws, req) => {
     )
     const DBSession = await Sessions.getSessionById(sid)
     const clientOrigin = req.headers.origin
-
     // (eldersonar) When in a live environment, we check to make sure the client origin matches our server
     // and we ensure the connection has a valid session ID
     if (process.env.NODE_ENV !== 'development') {
@@ -123,6 +122,7 @@ wss.on('connection', async (ws, req) => {
         }
       }
     }
+
     try {
       const parsedMessage = JSON.parse(message)
       console.log('New Websocket Message:', parsedMessage)
@@ -148,6 +148,8 @@ wss.on('connection', async (ws, req) => {
   ws.on('pong', (data) => {
     console.log('Pong')
   })
+
+  sendMessage(ws, 'SERVER', 'ADMIN_WEBSOCKET_READY')
 })
 
 // Send an outbound message to a websocket client
@@ -353,7 +355,7 @@ const messageHandler = async (ws, context, type, data = {}) => {
         switch (type) {
           case 'CREATE_SINGLE_USE':
             if (check(rules, userRoles, 'invitations:create')) {
-              var invitation
+              let invitation
               if (data.workflow) {
                 invitation = await Invitations.createPersistentSingleUseInvitation(
                   data.workflow,
@@ -367,6 +369,20 @@ const messageHandler = async (ws, context, type, data = {}) => {
             } else {
               sendMessage(ws, 'INVITATIONS', 'INVITATIONS_ERROR', {
                 error: 'ERROR: You are not authorized to create invitations.',
+              })
+            }
+            break
+
+          case 'ACCEPT_INVITATION':
+            if (check(rules, userRoles, 'invitations:accept')) {
+              let invitation = await Invitations.acceptInvitation(data)
+
+              // sendMessage(ws, 'INVITATIONS', 'INVITATION', {
+              //   invitation_record: invitation,
+              // })
+            } else {
+              sendMessage(ws, 'INVITATIONS', 'INVITATIONS_ERROR', {
+                error: 'ERROR: You are not authorized to accept invitations.',
               })
             }
             break
@@ -426,6 +442,39 @@ const messageHandler = async (ws, context, type, data = {}) => {
               sendMessage(ws, 'DEMOGRAPHICS', 'DEMOGRAPHICS_ERROR', {
                 error:
                   'ERROR: You are not authorized to create or update demographics.',
+              })
+            }
+            break
+
+          default:
+            console.error(`Unrecognized Message Type: ${type}`)
+            sendErrorMessage(ws, 1, 'Unrecognized Message Type')
+            break
+        }
+        break
+
+      case 'OUT_OF_BAND':
+        switch (type) {
+          case 'CREATE_INVITATION':
+            if (check(rules, userRoles, 'invitations:create')) {
+              let invitation = await Invitations.createOutOfBandInvitation()
+
+              sendMessage(ws, 'OUT_OF_BAND', 'INVITATION', {
+                invitation_record: invitation,
+              })
+            } else {
+              sendMessage(ws, 'OUT_OF_BAND', 'INVITATIONS_ERROR', {
+                error: 'ERROR: You are not authorized to create invitations.',
+              })
+            }
+            break
+
+          case 'ACCEPT_INVITATION':
+            if (check(rules, userRoles, 'invitations:accept')) {
+              await Invitations.acceptOutOfBandInvitation(data)
+            } else {
+              sendMessage(ws, 'OUT_OF_BAND', 'INVITATIONS_ERROR', {
+                error: 'ERROR: You are not authorized to accept invitations.',
               })
             }
             break
@@ -532,9 +581,26 @@ const messageHandler = async (ws, context, type, data = {}) => {
             }
             break
 
-          case 'SET_ORGANIZATION_NAME':
+          case 'GET_SMTP':
             if (check(rules, userRoles, 'settings:update')) {
-              console.log('SET_ORGANIZATION_NAME')
+              const smtpConfigs = await Settings.getSMTP()
+              if (smtpConfigs)
+                sendMessage(ws, 'SETTINGS', 'SETTINGS_SMTP', smtpConfigs)
+              else
+                sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                  error: "ERROR: SMTP can't be fetched.",
+                })
+            } else {
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error:
+                  'ERROR: You are not authorized to fetch SMTP configurations.',
+              })
+            }
+            break
+
+          case 'SET_ORGANIZATION':
+            if (check(rules, userRoles, 'settings:update')) {
+              console.log('SET_ORGANIZATION')
               const updatedOrganization = await Settings.setOrganization(data)
               if (updatedOrganization) {
                 sendMessage(
@@ -770,6 +836,68 @@ const messageHandler = async (ws, context, type, data = {}) => {
         }
         break
 
+      case 'PRESENTATIONS':
+        switch (type) {
+          case 'GET_ALL':
+            const presentationReports = await Presentations.getAll()
+
+            sendMessage(ws, 'PRESENTATIONS', 'PRESENTATION_REPORTS', {
+              presentation_reports: presentationReports,
+            })
+            break
+
+          default:
+            console.error(`Unrecognized Message Type: ${type}`)
+            sendErrorMessage(ws, 1, 'Unrecognized Message Type')
+            break
+        }
+        break
+
+      case 'GOVERNANCE':
+        switch (type) {
+          case 'GET_PRIVILEGES':
+            console.log('GET_PRIVILEGES')
+            if (check(rules, userRoles, 'invitations:create')) {
+              const privileges = await Governance.getPrivilegesByRoles()
+              if (privileges.error === 'noDID') {
+                console.log('No public did anchored')
+                sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_ERROR', {
+                  error: 'ERROR: You need to anchor your DID',
+                })
+              } else if (privileges.error === 'noPermissions') {
+                console.log('No permissions set')
+                sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_ERROR', {
+                  error: 'ERROR: Governance permissions are not set',
+                })
+              } else if (privileges.error === 'noPrivileges') {
+                console.log('No privileges set')
+                sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_ERROR', {
+                  error: 'ERROR: Governance privileges are not set',
+                })
+              } else if (!privileges) {
+                console.log('ERROR: privileges undefined error')
+                sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_ERROR', {
+                  error: 'ERROR: privileges undefined error',
+                })
+              } else {
+                sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_SUCCESS', {
+                  privileges,
+                })
+              }
+            } else {
+              sendMessage(ws, 'GOVERNANCE', 'PRIVILEGES_ERROR', {
+                error: 'ERROR: You are not authorized to create invitations.',
+              })
+            }
+            break
+
+          default:
+            console.error(`Unrecognized Message Type: ${type}`)
+            sendErrorMessage(ws, 1, 'Unrecognized Message Type')
+            break
+        }
+        break
+
       default:
         console.error(`Unrecognized Message Context: ${context}`)
         sendErrorMessage(ws, 1, 'Unrecognized Message Context')
@@ -791,13 +919,15 @@ module.exports = {
   wss,
 }
 
-const Invitations = require('./agentLogic/invitations')
-const Demographics = require('./agentLogic/demographics')
-const Passports = require('./agentLogic/passports')
 const Contacts = require('./agentLogic/contacts')
 const Credentials = require('./agentLogic/credentials')
+const Demographics = require('./agentLogic/demographics')
+const Governance = require('./agentLogic/governance')
 const Images = require('./agentLogic/images')
+const Invitations = require('./agentLogic/invitations')
+const Passports = require('./agentLogic/passports')
+const Presentations = require('./agentLogic/presentations')
+const Roles = require('./agentLogic/roles')
 const Sessions = require('./agentLogic/sessions')
 const Settings = require('./agentLogic/settings')
 const Users = require('./agentLogic/users')
-const Roles = require('./agentLogic/roles')

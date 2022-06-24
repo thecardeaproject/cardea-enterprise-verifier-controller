@@ -116,18 +116,19 @@ const ledgerWrites = async () => {
   rlDID.on('close', async () => {
     // Create Cred Def
     let credDefIDs = []
-    credDefIDs.push(
-      await CredDefs.createCredDef(
-        'default',
-        'X2JpGAqC7ZFY4hwKG6kLw9:2:Test_ID:1.2',
-      ),
-    )
-    credDefIDs.push(
-      await CredDefs.createCredDef(
-        'default',
-        'X2JpGAqC7ZFY4hwKG6kLw9:2:Covid_19_Lab_Result:1.5',
-      ),
-    )
+    // The Verifier doesn't presently need to issue any credentials, so we don't need to create any CredDefs
+    // credDefIDs.push(
+    //   await CredDefs.createCredDef(
+    //     'default',
+    //     'X2JpGAqC7ZFY4hwKG6kLw9:2:Test_ID:1.2',
+    //   ),
+    // )
+    // credDefIDs.push(
+    //   await CredDefs.createCredDef(
+    //     'default',
+    //     'X2JpGAqC7ZFY4hwKG6kLw9:2:Covid_19_Lab_Result:1.5',
+    //   ),
+    // )
 
     const rlCred = readline.createInterface({
       input: process.stdin,

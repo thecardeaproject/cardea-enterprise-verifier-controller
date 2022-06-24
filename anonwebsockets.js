@@ -79,6 +79,8 @@ awss.on('connection', (ws, req) => {
   ws.on('pong', (data) => {
     console.log('Pong')
   })
+
+  sendMessage(ws, 'SERVER', 'ANON_WEBSOCKET_READY')
 })
 
 // Send an outbound message to a websocket client
@@ -130,19 +132,6 @@ const messageHandler = async (ws, context, type, data = {}) => {
         }
         break
 
-      case 'PRESENTATIONS':
-        switch (type) {
-          case 'REQUEST':
-            if (ws.connection_ids.indexOf(data.connection_id) != -1) {
-              await Presentations.requestPresentation(
-                data.connection_id,
-                data.schema_id,
-                data.attributes,
-              )
-            }
-        }
-        break
-
       case 'SETTINGS':
         switch (type) {
           case 'GET_ORGANIZATION':
@@ -158,6 +147,16 @@ const messageHandler = async (ws, context, type, data = {}) => {
             else
               sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
                 error: "ERROR: organization name couldn't be fetched.",
+              })
+            break
+
+          case 'GET_THEME':
+            const currentTheme = await Settings.getTheme()
+            if (currentTheme)
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_THEME', currentTheme)
+            else
+              sendMessage(ws, 'SETTINGS', 'SETTINGS_ERROR', {
+                error: "ERROR: UI theme couldn't be fetched.",
               })
             break
 
@@ -235,9 +234,9 @@ module.exports = {
   sendMessageToAll,
   sendMessageToConnectionId,
   awss,
+  connectionIDWebSocket,
 }
 
 const Images = require('./agentLogic/images')
 const Invitations = require('./agentLogic/invitations')
-const Presentations = require('./agentLogic/presentations')
 const Settings = require('./agentLogic/settings')

@@ -26,9 +26,9 @@ module.exports.server = server
 // Websockets required to make APIs work and avoid circular dependency
 let adminWebsocket = require('./adminwebsockets.js')
 let anonWebSocket = require('./anonwebsockets.js')
-const Users = require('./agentLogic/users')
 
 const Sessions = require('./agentLogic/sessions')
+const Users = require('./agentLogic/users')
 
 server.on('upgrade', function upgrade(request, socket, head) {
   const pathname = url.parse(request.url).pathname
@@ -80,10 +80,15 @@ app.use(
 )
 
 // (eldersonar) Create database
-const sequelize = new Sequelize('verifier', 'verifier', 'verifier', {
-  host: 'verifier-db',
-  dialect: 'postgres',
-})
+const sequelize = new Sequelize(
+  process.env.DB,
+  process.env.DB_USERNAME,
+  process.env.DB_PASSWORD,
+  {
+    host: process.env.DB_HOST,
+    dialect: 'postgres',
+  },
+)
 
 const myStore = new SequelizeStore({
   db: sequelize,

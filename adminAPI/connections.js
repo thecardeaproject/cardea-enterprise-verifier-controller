@@ -31,6 +31,29 @@ const createInvitation = async (
   }
 }
 
+const acceptInvitation = async (invitation) => {
+  try {
+    console.log('Accepting Invitation')
+
+    let parsedInvitation = JSON.parse(invitation)
+
+    const invitationMessage = await sendAdminMessage(
+      'post',
+      `/connections/receive-invitation`,
+      {
+        alias: parsedInvitation.label,
+        auto_accept: true,
+      },
+      parsedInvitation,
+    )
+
+    return invitationMessage
+  } catch (error) {
+    console.error('Invitation Acceptance Error')
+    throw error
+  }
+}
+
 // Fetch a Connection request message to be sent to the Cloud Agent Adminstration API
 const fetchConnection = async (connectionID) => {
   try {
@@ -106,8 +129,29 @@ const queryConnections = async (
   }
 }
 
+const sendBasicMessage = async (connectionID, body) => {
+  console.log(`Sending Basic Message to Connection: ${connectionID}`)
+  console.log('With Body:')
+  console.log(body)
+  try {
+    const response = await sendAdminMessage(
+      'post',
+      `/connections/${connectionID}/send-message`,
+      {},
+      body,
+    )
+
+    return response
+  } catch (error) {
+    console.error('Error Sending Basic Message')
+    throw error
+  }
+}
+
 module.exports = {
   createInvitation,
+  acceptInvitation,
   fetchConnection,
   queryConnections,
+  sendBasicMessage,
 }
