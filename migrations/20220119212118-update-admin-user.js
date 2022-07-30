@@ -1,5 +1,7 @@
 'use strict'
 
+const bcrypt = require('bcryptjs')
+
 var dbm
 var type
 var seed
@@ -14,27 +16,24 @@ exports.setup = function (options, seedLink) {
   seed = seedLink
 }
 
-exports.up = function (db) {
-  const organizationName = JSON.stringify({
-    organizationName: 'Verifier',
-    title: 'Verifier',
-  })
+exports.up = async function (db) {
+  const timestamp = new Date()
+  const castedTimestamp = timestamp.toISOString()
+  const hashedPassword = await bcrypt.hash('123!@#!@#QWEqwe', 10)
 
   return db.runSql(
-    `UPDATE settings SET value = '${organizationName}' WHERE key = 'organization';`,
+    `UPDATE users SET password = '${hashedPassword}' WHERE username = 'admin';`,
     function (err) {
       if (err) return console.log(err)
     },
   )
 }
 
-exports.down = function (db) {
-  const companyName = JSON.stringify({
-    companyName: 'Verifier',
-  })
+exports.down = async function (db) {
+  const oldHashedPassword = await bcrypt.hash('12#$qwER', 10)
 
   return db.runSql(
-    `UPDATE settings SET value = '${companyName}' WHERE key = 'organization';`,
+    `UPDATE users SET password = '${oldHashedPassword}' WHERE username = 'admin';`,
     function (err) {
       if (err) return console.log(err)
     },

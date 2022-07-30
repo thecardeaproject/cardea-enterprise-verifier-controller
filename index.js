@@ -304,7 +304,7 @@ app.post('/api/user/update', async (req, res) => {
       req.body.flag,
     )
   } else {
-    // Updating the token for the user (from password forgot screen)
+    // updating the token for the user (from password forgot screen)
 
     // Empty/data checks
     if (!req.body.email) res.json({error: 'All fields must be filled out.'})

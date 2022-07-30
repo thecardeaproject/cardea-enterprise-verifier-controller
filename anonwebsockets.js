@@ -116,7 +116,6 @@ const messageHandler = async (ws, context, type, data = {}) => {
           case 'CREATE_SINGLE_USE':
             var invitation
             invitation = await Invitations.createSingleUseInvitation()
-
             ws.connection_ids.push(invitation.connection_id)
             connectionIDWebSocket[invitation.connection_id] = ws
 
@@ -202,6 +201,7 @@ const messageHandler = async (ws, context, type, data = {}) => {
             }
             break
 
+          case 'GET_ALL':
           default:
             console.log('GET_IMAGES')
             const images = await Images.getAll()
