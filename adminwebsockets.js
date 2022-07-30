@@ -780,6 +780,7 @@ const messageHandler = async (ws, context, type, data = {}) => {
             }
             break
 
+          case 'GET_ALL':
           default:
             const images = await Images.getAll()
             if (images) sendMessage(ws, 'SETTINGS', 'LOGO', images[0])
