@@ -2,7 +2,7 @@ const server = require('./index.js').server
 const ControllerError = require('./errors.js')
 const WebSocket = require('ws')
 
-awss = new WebSocket.Server({ noServer: true })
+awss = new WebSocket.Server({noServer: true})
 console.log('Anon Websockets Setup')
 let connectionIDWebSocket = []
 
@@ -19,7 +19,7 @@ const sendMessageToAll = (context, type, data = {}) => {
       }
       if (client.readyState === WebSocket.OPEN) {
         console.log('Sending Message to Client')
-        client.send(JSON.stringify({ context, type, data }))
+        client.send(JSON.stringify({context, type, data}))
       } else {
         console.log('Client Not Ready')
       }
@@ -35,7 +35,7 @@ const sendMessageToConnectionId = (connection_id, context, type, data = {}) => {
 
   console.log(`Sending Message to anon websocket client of type: ${type}`)
   try {
-    ws.send(JSON.stringify({ context, type, data }))
+    ws.send(JSON.stringify({context, type, data}))
   } catch (error) {
     console.error(error)
     throw error
@@ -87,7 +87,7 @@ awss.on('connection', (ws, req) => {
 const sendMessage = (ws, context, type, data = {}) => {
   console.log(`Sending Message to anon websocket client of type: ${type}`)
   try {
-    ws.send(JSON.stringify({ context, type, data }))
+    ws.send(JSON.stringify({context, type, data}))
   } catch (error) {
     console.error(error)
     throw error
@@ -99,7 +99,7 @@ const sendErrorMessage = (ws, errorCode, errorReason) => {
   try {
     console.log('Sending Error Message')
 
-    sendMessage(ws, 'ERROR', 'SERVER_ERROR', { errorCode, errorReason })
+    sendMessage(ws, 'ERROR', 'SERVER_ERROR', {errorCode, errorReason})
   } catch (error) {
     console.error('Error Sending Error Message to Client')
     console.error(error)
@@ -201,7 +201,7 @@ const messageHandler = async (ws, context, type, data = {}) => {
             }
             break
 
-            case 'GET_ALL':
+          case 'GET_ALL':
           default:
             console.log('GET_IMAGES')
             const images = await Images.getAll()
